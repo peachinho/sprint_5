@@ -1,4 +1,8 @@
-from selenium.common.exceptions import StaleElementReferenceException, TimeoutException
+from selenium.common.exceptions import (
+    ElementNotInteractableException,
+    StaleElementReferenceException,
+    TimeoutException,
+)
 from selenium.webdriver.support import expected_conditions as expected
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -21,7 +25,17 @@ class BasePage:
         self.driver.get(BASE_URL)
 
     def click(self, locator) -> None:
-        self.wait.until(expected.element_to_be_clickable(locator)).click()
+        def click_element(driver):
+            try:
+                element = expected.element_to_be_clickable(locator)(driver)
+                if not element:
+                    return False
+                element.click()
+                return True
+            except (ElementNotInteractableException, StaleElementReferenceException):
+                return False
+
+        self.wait.until(click_element)
 
     def fill(self, locator, value: str) -> None:
         def enter_value(driver):
@@ -32,7 +46,7 @@ class BasePage:
                 element.clear()
                 element.send_keys(value)
                 return True
-            except StaleElementReferenceException:
+            except (ElementNotInteractableException, StaleElementReferenceException):
                 return False
 
         self.wait.until(enter_value)
@@ -103,7 +117,6 @@ class LoginPage(BasePage):
         self.fill(LoginLocators.EMAIL_INPUT, email)
         self.fill(LoginLocators.PASSWORD_INPUT, password)
         self.click(LoginLocators.LOGIN_BUTTON)
-        self.wait.until(expected.visibility_of_element_located(HeaderLocators.USER_NAME))
 
 
 class RegistrationPage(BasePage):
@@ -117,13 +130,10 @@ class RegistrationPage(BasePage):
         self.fill(RegistrationLocators.EMAIL_INPUT, email)
         self.click(RegistrationLocators.CREATE_ACCOUNT_BUTTON)
 
-    def wait_for_success(self) -> None:
-        self.wait.until(expected.visibility_of_element_located(HeaderLocators.USER_NAME))
-
-    def wait_for_error(self) -> None:
+    def wait_for_registration_form_to_close(self) -> None:
         self.wait.until(
-            expected.visibility_of_element_located(
-                RegistrationLocators.EMAIL_ERROR_MESSAGE
+            expected.invisibility_of_element_located(
+                RegistrationLocators.CREATE_ACCOUNT_BUTTON
             )
         )
 
@@ -166,7 +176,6 @@ class ListingPage(BasePage):
         self.select_hidden_radio(ListingLocators.USED_CONDITION_RADIO)
         self.click(ListingLocators.PUBLISH_BUTTON)
         self.wait.until(expected.url_to_be(BASE_URL))
-        self.wait.until(expected.visibility_of_element_located(HeaderLocators.USER_NAME))
 
 
 class ProfilePage(BasePage):

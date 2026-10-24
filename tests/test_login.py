@@ -1,4 +1,4 @@
-from data import EXPECTED_USER_NAME
+from data import EXPECTED_AUTHORIZED_USER_STATE
 from pages import HomePage, LoginPage
 
 
@@ -8,6 +8,7 @@ class TestLogin:
         login_page = LoginPage(driver)
         home_page.open_login()
         login_page.login(registered_user["email"], registered_user["password"])
-        actual_result = (home_page.user_name(), home_page.avatar_is_visible())
-        expected_result = (EXPECTED_USER_NAME, True)
-        assert actual_result == expected_result
+        assert (
+            home_page.user_name(),
+            home_page.avatar_is_visible(),
+        ) == EXPECTED_AUTHORIZED_USER_STATE

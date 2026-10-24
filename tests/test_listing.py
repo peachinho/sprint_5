@@ -1,4 +1,9 @@
-from data import generate_listing_title
+from data import (
+    LISTING_DESCRIPTION,
+    LISTING_PRICE,
+    UNAUTHORIZED_LISTING_MESSAGE,
+    generate_listing_title,
+)
 from pages import HomePage, ListingPage, LoginPage, ProfilePage
 
 
@@ -7,9 +12,7 @@ class TestListing:
         home_page = HomePage(driver)
         listing_page = ListingPage(driver)
         home_page.open_new_listing()
-        actual_result = listing_page.unauthorized_message()
-        expected_result = "Чтобы разместить объявление, авторизуйтесь"
-        assert actual_result == expected_result
+        assert listing_page.unauthorized_message() == UNAUTHORIZED_LISTING_MESSAGE
 
     def test_authorized_user_creates_listing(self, driver, registered_user):
         home_page = HomePage(driver)
@@ -22,10 +25,8 @@ class TestListing:
         home_page.open_new_listing()
         listing_page.create_listing(
             title=listing_title,
-            description="Объявление создано автоматизированным тестом",
-            price="1500",
+            description=LISTING_DESCRIPTION,
+            price=LISTING_PRICE,
         )
         home_page.open_profile()
-        actual_result = profile_page.listing_is_visible(listing_title)
-        expected_result = True
-        assert actual_result == expected_result
+        assert profile_page.listing_is_visible(listing_title) is True

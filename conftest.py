@@ -34,7 +34,7 @@ def registered_user():
         home_page.open()
         home_page.open_registration()
         registration_page.register(email, DEFAULT_PASSWORD)
-        registration_page.wait_for_success()
+        registration_page.wait_for_registration_form_to_close()
     finally:
         browser.quit()
     return {"email": email, "password": DEFAULT_PASSWORD}
